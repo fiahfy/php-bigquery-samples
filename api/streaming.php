@@ -9,11 +9,14 @@ require_once __DIR__ . '/client.php';
  * @param string                  $datasetId
  * @param string                  $tableId
  * @param string                  $rowString
+ * @param int                     $retries
  *
  * @return Google_Service_Bigquery_TableDataInsertAllResponse
  */
-function streamRowToBigquery($service, $projectId, $datasetId, $tableId, $rowString)
+function streamRowToBigquery($service, $projectId, $datasetId, $tableId, $rowString, $retries = 5)
 {
+    $service->getClient()->setConfig('retry', ['retries' => $retries]);
+
     $row = new Google_Service_Bigquery_TableDataInsertAllRequestRows();
     $row->json = json_decode($rowString, true);
     $row->insertId = uniqid();
@@ -28,15 +31,16 @@ function streamRowToBigquery($service, $projectId, $datasetId, $tableId, $rowStr
  * @param string $projectId
  * @param string $datasetId
  * @param string $tableId
+ * @param int    $retries
  */
-function main($projectId, $datasetId, $tableId)
+function main($projectId, $datasetId, $tableId, $retries)
 {
     $client = Client::getMyClient();
 
     $service = new Google_Service_Bigquery($client);
 
     foreach (getRows() as $row) {
-        $response = streamRowToBigquery($service, $projectId, $datasetId, $tableId, $row);
+        $response = streamRowToBigquery($service, $projectId, $datasetId, $tableId, $row, $retries);
         var_dump($response);
     }
 }
@@ -65,11 +69,12 @@ function getRows()
 }
 
 if (realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
-    $options = getopt('', ['project_id:', 'dataset_id:', 'table_id:']);
+    $options = getopt('r::', ['project_id:', 'dataset_id:', 'table_id:']);
 
     main(
         $options['project_id'],
         $options['dataset_id'],
-        $options['table_id']
+        $options['table_id'],
+        $options['r'] ?: 5
     );
 }

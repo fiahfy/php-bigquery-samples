@@ -10,11 +10,14 @@ require_once __DIR__ . '/client.php';
  * @param string                  $tableId
  * @param string                  $sourceSchema
  * @param string                  $sourcePath
+ * @param int                     $retries
  *
  * @return Google_Service_Bigquery_Job
  */
-function loadTable($service, $projectId, $datasetId, $tableId, $sourceSchema, $sourcePath)
+function loadTable($service, $projectId, $datasetId, $tableId, $sourceSchema, $sourcePath, $retries = 5)
 {
+    $service->getClient()->setConfig('retry', ['retries' => $retries]);
+
     $jobReference = new Google_Service_Bigquery_JobReference();
     $jobReference->projectId = $projectId;
     $jobReference->jobId = uniqid();
@@ -76,8 +79,9 @@ function pollJob($service, $job)
  * @param string $tableId
  * @param string $schemaPath
  * @param string $dataPath
+ * @param int    $retries
  */
-function main($projectId, $datasetId, $tableId, $schemaPath, $dataPath)
+function main($projectId, $datasetId, $tableId, $schemaPath, $dataPath, $retries)
 {
     $client = Client::getMyClient();
 
@@ -85,19 +89,20 @@ function main($projectId, $datasetId, $tableId, $schemaPath, $dataPath)
 
     $schemaData = json_decode(file_get_contents($schemaPath), true);
 
-    $job = loadTable($service, $projectId, $datasetId, $tableId, $schemaData, $dataPath);
+    $job = loadTable($service, $projectId, $datasetId, $tableId, $schemaData, $dataPath, $retries);
 
     pollJob($service, $job);
 }
 
 if (realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
-    $options = getopt('', ['project_id:', 'dataset_id:', 'table_id:', 'schema_file:', 'data_path:']);
+    $options = getopt('r::', ['project_id:', 'dataset_id:', 'table_id:', 'schema_file:', 'data_path:']);
 
     main(
         $options['project_id'],
         $options['dataset_id'],
         $options['table_id'],
         $options['schema_file'],
-        $options['data_path']
+        $options['data_path'],
+        $options['r'] ?: 5
     );
 }

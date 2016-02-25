@@ -88,7 +88,7 @@ function main($cloudStoragePath, $projectId, $datasetId, $tableId, $retries, $ex
 }
 
 if (realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
-    $options = getopt('z::', ['project_id:', 'dataset_id:', 'table_id:', 'gcs_path:']);
+    $options = getopt('r::z::', ['project_id:', 'dataset_id:', 'table_id:', 'gcs_path:']);
 
     main(
         $options['gcs_path'],

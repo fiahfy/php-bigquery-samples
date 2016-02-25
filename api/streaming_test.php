@@ -17,7 +17,7 @@ function testStreamRowToBigquery()
 
     $config = require __DIR__ . '/config.php';
 
-    main($config['project_id'], DATASET_ID, TABLE_ID);
+    main($config['project_id'], DATASET_ID, TABLE_ID, 5);
 }
 
 testStreamRowToBigquery();

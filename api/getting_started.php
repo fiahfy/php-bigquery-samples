@@ -5,6 +5,8 @@ require_once __DIR__ . '/client.php';
 
 /**
  * @param string $projectId
+ *
+ * @throws Exception
  */
 function main($projectId)
 {

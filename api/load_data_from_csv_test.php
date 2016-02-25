@@ -14,7 +14,8 @@ function testLoadTable()
         DATASET_ID,
         TABLE_ID,
         'api/resources/schema.json',
-        "gs://{$config['bucket_id']}/data.csv"
+        "gs://{$config['bucket_id']}/data.csv",
+        5
     );
 }
 
