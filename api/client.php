@@ -14,6 +14,8 @@ class Client
         $client = new Google_Client();
         $client->setAuthConfigFile($config['private_key_file_path']);
         $client->setScopes($config['scopes']);
+        // Or if using Application Default Credentials
+        // $client->useApplicationDefaultCredentials();
         return $client;
     }
 }
