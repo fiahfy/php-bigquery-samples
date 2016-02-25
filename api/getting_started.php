@@ -12,17 +12,22 @@ function main($projectId)
 
     $service = new Google_Service_Bigquery($client);
 
-    $request = new Google_Service_Bigquery_QueryRequest();
-    $request->query = "SELECT TOP(corpus, 10) as title, "
-                    . "COUNT(*) as unique_words "
-                    . "FROM [publicdata:samples.shakespeare]";
+    try {
+        $request = new Google_Service_Bigquery_QueryRequest();
+        $request->query = "SELECT TOP(corpus, 10) as title, "
+                        . "COUNT(*) as unique_words "
+                        . "FROM [publicdata:samples.shakespeare]";
 
-    $response = $service->jobs->query($projectId, $request);
+        $response = $service->jobs->query($projectId, $request);
 
-    print("Query Results:\n");
+        print("Query Results:\n");
 
-    foreach ($response->getRows() as $row) {
-        print(implode("\t", array_map(function($f) { return $f->v; }, $row->f)) . "\n");
+        foreach ($response->getRows() as $row) {
+            print(implode("\t", array_map(function($f) { return $f->v; }, $row->f)) . "\n");
+        }
+    } catch (Exception $e) {
+        print("Error: {$e->getMessage()}\n");
+        throw $e;
     }
 }
 

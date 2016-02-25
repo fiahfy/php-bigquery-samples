@@ -8,11 +8,14 @@ require_once __DIR__ . '/client.php';
  * @param string                  $projectId
  * @param string                  $query
  * @param bool                    $batch
+ * @param int                     $retries
  *
  * @return Google_Service_Bigquery_Job
  */
-function asyncQuery($service, $projectId, $query, $batch = false)
+function asyncQuery($service, $projectId, $query, $batch = false, $retries = 5)
 {
+    $service->getClient()->setConfig('retry', ['retries' => $retries]);
+
     $jobReference = new Google_Service_Bigquery_JobReference();
     $jobReference->projectId = $projectId;
     $jobReference->jobId = uniqid();
@@ -56,14 +59,15 @@ function pollJob($service, $job)
  * @param string $projectId
  * @param string $query
  * @param bool   $batch
+ * @param int    $retries
  */
-function main($projectId, $query, $batch)
+function main($projectId, $query, $batch, $retries)
 {
     $client = Client::getMyClient();
 
     $service = new Google_Service_Bigquery($client);
 
-    $job = asyncQuery($service, $projectId, $query, $batch);
+    $job = asyncQuery($service, $projectId, $query, $batch, $retries);
 
     pollJob($service, $job);
 
@@ -85,11 +89,12 @@ function main($projectId, $query, $batch)
 }
 
 if (realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
-    $options = getopt('b::', ['project_id:', 'query:']);
+    $options = getopt('b::r::', ['project_id:', 'query:']);
 
     main(
         $options['project_id'],
         $options['query'],
-        $options['b'] ?: false
+        $options['b'] ?: false,
+        $options['r'] ?: 5
     );
 }
