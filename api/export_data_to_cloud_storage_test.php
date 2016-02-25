@@ -14,6 +14,7 @@ function testExportTableCSV()
         $config['project_id'],
         DATASET_ID,
         TABLE_ID,
+        5,
         'CSV'
     );
 }
@@ -27,6 +28,7 @@ function testExportTableJSON()
         $config['project_id'],
         DATASET_ID,
         TABLE_ID,
+        5,
         'NEWLINE_DELIMITED_JSON'
     );
 }
@@ -40,6 +42,7 @@ function testExportTableAVRO()
         $config['project_id'],
         DATASET_ID,
         TABLE_ID,
+        5,
         'AVRO'
     );
 }

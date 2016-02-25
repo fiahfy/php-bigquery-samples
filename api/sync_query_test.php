@@ -10,7 +10,7 @@ function testSyncQuery()
            . "FROM publicdata:samples.shakespeare "
            . "GROUP BY corpus;";
 
-    main($config['project_id'], $query, 30);
+    main($config['project_id'], $query, 30, 5);
 }
 
 testSyncQuery();

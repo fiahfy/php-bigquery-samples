@@ -9,13 +9,18 @@ require_once __DIR__ . '/client.php';
  * @param string                  $projectId
  * @param string                  $datasetId
  * @param string                  $tableId
+ * @param int                     $retries
  * @param string                  $exportFormat
  * @param string                  $compression
  *
  * @return Google_Service_Bigquery_Job
  */
-function exportTable($service, $cloudStoragePath, $projectId, $datasetId, $tableId, $exportFormat = 'CSV', $compression = 'NONE')
-{
+function exportTable(
+    $service, $cloudStoragePath, $projectId, $datasetId, $tableId,
+    $retries = 5, $exportFormat = 'CSV', $compression = 'NONE'
+) {
+    $service->getClient()->setConfig('retry', ['retries' => $retries]);
+
     $jobReference = new Google_Service_Bigquery_JobReference();
     $jobReference->projectId = $projectId;
     $jobReference->jobId = uniqid();
@@ -67,28 +72,30 @@ function pollJob($service, $job)
  * @param string $projectId
  * @param string $datasetId
  * @param string $tableId
+ * @param int    $retries
  * @param string $exportFormat
  * @param string $compression
  */
-function main($cloudStoragePath, $projectId, $datasetId, $tableId, $exportFormat = 'CSV', $compression = 'NONE')
+function main($cloudStoragePath, $projectId, $datasetId, $tableId, $retries, $exportFormat = 'CSV', $compression = 'NONE')
 {
     $client = Client::getMyClient();
 
     $service = new Google_Service_Bigquery($client);
 
-    $job = exportTable($service, $cloudStoragePath, $projectId, $datasetId, $tableId, $exportFormat, $compression);
+    $job = exportTable($service, $cloudStoragePath, $projectId, $datasetId, $tableId, $retries, $exportFormat, $compression);
 
     pollJob($service, $job);
 }
 
 if (realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
-    $options = getopt('z::', ['project_id:', 'dataset_id:', 'table_id:', 'gcs_path:']);
+    $options = getopt('r::z::', ['project_id:', 'dataset_id:', 'table_id:', 'gcs_path:']);
 
     main(
         $options['gcs_path'],
         $options['project_id'],
         $options['dataset_id'],
         $options['table_id'],
+        $options['r'] ?: 5,
         'CSV',
         $options['z'] ? 'GZIP' :'NONE'
     );
